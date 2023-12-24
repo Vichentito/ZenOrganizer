@@ -1,46 +1,115 @@
 # Zen Organizer
 
-Una aplicación integral de productividad que combina un calendario, lista de tareas, timer Pomodoro, gestor de notas y seguimiento de hábitos, todo diseñado para mejorar la organización personal y el enfoque mental.
+Zen Organizer es una aplicación integral de productividad diseñada para ayudar a mejorar y organizar tu vida. Combina un calendario, lista de tareas, timer Pomodoro, gestor de notas y seguimiento de hábitos en una sola plataforma.
 
-# Roadmap para la Zen Organizer
+## Configuración del Entorno de Desarrollo
 
-## Fase 1: Planificación y Diseño
+### Creación y Activación del Entorno Virtual
 
-- **Definición de Requisitos**
-- **Esbozo de la Interfaz de Usuario (UI)**
-- **Selección de Tecnologías**
+Es recomendable utilizar un entorno virtual para manejar las dependencias.
 
-## Fase 2: Desarrollo del Prototipo
+1. **Crear el Entorno Virtual**:
+   En la raíz del proyecto, ejecuta:
 
-- **Configuración del Entorno de Desarrollo**
-- **Desarrollo de un Prototipo Básico**
-- **Pruebas Iniciales**
+   ```bash
+   python -m venv venv
+   ```
 
-## Fase 3: Desarrollo de Funcionalidades Específicas
+   Esto creará un nuevo directorio `venv` en el proyecto.
 
-- **Calendario y Recordatorios**
-- **Gestión de Notas**
-- **Timer Pomodoro Mejorado**
-- **Lista de Tareas Avanzada**
+2. **Activar el Entorno Virtual**:
 
-## Fase 4: Optimización y Funcionalidades Adicionales
+   - En Windows:
+     ```bash
+     .\venv\Scripts\activate
+     ```
+   - En Unix o MacOS:
+     ```bash
+     source venv/bin/activate
+     ```
 
-- **Seguimiento de Hábitos y Metas a Largo Plazo**
-- **Reportes de Productividad**
-- **Pruebas y Depuración**
+3. **Instalar Dependencias**:
+   Con el entorno virtual activado, instala todas las dependencias necesarias:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-## Fase 5: Interfaz de Usuario y Experiencia de Usuario
+### Desactivación del Entorno Virtual
 
-- **Diseño de Interfaz de Usuario**
-- **Pruebas de Usabilidad**
+Para salir del entorno virtual, simplemente ejecuta:
 
-## Fase 6: Preparación para el Lanzamiento
+```bash
+deactivate
+```
 
-- **Documentación**
-- **Pruebas Finales**
-- **Lanzamiento de la Versión Beta**
+## Ejecución del Proyecto
 
-## Fase 7: Lanzamiento y Mantenimiento
+Para ejecutar Zen Organizer:
 
-- **Lanzamiento Oficial**
-- **Mantenimiento y Actualizaciones**
+1. Asegúrate de que el entorno virtual esté activado.
+2. Ejecuta el proyecto con Flet:
+   ```bash
+   flet run .
+   ```
+
+## Manejo de Commits en Git
+
+Para mantener un historial claro y útil en Git, sigue estas mejores prácticas:
+
+- **Commits Pequeños y Frecuentes**: Realiza commits pequeños y frecuentes. Esto facilita entender los cambios y solucionar problemas si surgen.
+- **Mensajes Descriptivos**: Escribe mensajes de commit claros y descriptivos, que expliquen qué cambios se han realizado y por qué.
+  - Ejemplo de un buen mensaje de commit:
+    ```bash
+    git commit -m "Agrega timer Pomodoro a la interfaz principal"
+    ```
+- **Uso de Branches**: Para nuevas características o correcciones importantes, considera usar branches. Esto mantiene el `main` estable mientras se desarrollan nuevas funcionalidades.
+- **Pull Requests y Revisión de Código**: Si trabajas en equipo, utiliza Pull Requests para revisar el código antes de fusionarlo con el `main`.
+
+## Roadmap
+
+Este es el roadmap general para el desarrollo de Zen Organizer:
+
+### Fase 1: Planificación y Diseño
+
+- Definición de Requisitos
+- Esbozo de la Interfaz de Usuario (UI)
+- Selección de Tecnologías
+
+### Fase 2: Desarrollo del Prototipo
+
+- Configuración del Entorno de Desarrollo
+- Desarrollo de un Prototipo Básico
+- Pruebas Iniciales
+
+### Fase 3: Desarrollo de Funcionalidades Específicas
+
+- Calendario y Recordatorios
+- Gestión de Notas
+- Timer Pomodoro Mejorado
+- Lista de Tareas Avanzada
+
+### Fase 4: Optimización y Funcionalidades Adicionales
+
+- Seguimiento de Hábitos y Metas a Largo Plazo
+- Reportes de Productividad
+- Pruebas y Depuración
+
+### Fase 5: Interfaz de Usuario y Experiencia de Usuario
+
+- Diseño de Interfaz de Usuario
+- Pruebas de Usabilidad
+
+### Fase 6: Preparación para el Lanzamiento
+
+- Documentación
+- Pruebas Finales
+- Lanzamiento de la Versión Beta
+
+### Fase 7: Lanzamiento y Mantenimiento
+
+- Lanzamiento Oficial
+- Mantenimiento y Actualizaciones
+
+## Contribuciones
+
+Las contribuciones son bienvenidas. Si deseas contribuir al proyecto, por favor envía un Pull Request con tus cambios para su revisión.
