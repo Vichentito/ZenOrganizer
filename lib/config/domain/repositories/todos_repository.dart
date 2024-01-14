@@ -1,9 +1,10 @@
-import 'package:zen_organizer/config/domain/entities/todo_item.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:zen_organizer/config/infrastructure/models/todos/todos_model.dart';
 
 abstract class TodosRepository {
-  Future<List<ToDoItem>> getTodos();
-  Future<ToDoItem> getTodoById(int id);
-  Future<ToDoItem> createTodo();
-  Future<ToDoItem> updateTodo();
-  Future<ToDoItem> deleteTodo();
+  Future<List<ToDoItemModel>> getTodos();
+  Future<ToDoItemModel> getTodoById(String id);
+  Future<ToDoItemModel> createTodo(ToDoItemModel todoItem);
+  Future<ToDoItemModel> updateTodo(String id, ToDoItemModel todoItem);
+  Future<void> deleteTodo(String id);
 }
