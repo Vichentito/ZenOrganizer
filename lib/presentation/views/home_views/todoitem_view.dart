@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:zen_organizer/config/infrastructure/models/todos/todos_model.dart';
+import 'package:zen_organizer/config/infrastructure/models/todos_model.dart';
 
 class ToDoItemCard extends StatelessWidget {
   final ToDoItemModel todo;

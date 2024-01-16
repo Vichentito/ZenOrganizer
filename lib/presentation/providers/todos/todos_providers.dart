@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:zen_organizer/config/domain/repositories/todos_repository.dart';
-import 'package:zen_organizer/config/infrastructure/models/todos/todos_model.dart';
+import 'package:zen_organizer/config/infrastructure/models/todos_model.dart';
 import 'package:zen_organizer/presentation/providers/todos/todos_repository_provider.dart';
 
 class TodosState {
@@ -20,18 +20,21 @@ final todosStateProvider = StateNotifierProvider<TodosNotifier, TodosState>(
 class TodosNotifier extends StateNotifier<TodosState> {
   TodosNotifier(this._repository)
       : super(TodosState(
-            todosList: const AsyncValue.loading(), isSortedByPriority: false)) {
-    _loadTodos();
-  }
+            todosList: const AsyncValue.loading(), isSortedByPriority: false));
 
   final TodosRepository _repository;
+  bool _hasLoadedTodos = false;
+  List<ToDoItemModel> _originalTodos = [];
 
-  Future<void> _loadTodos() async {
+  Future<void> loadTodos() async {
+    if (_hasLoadedTodos) return;
     try {
       final todos = await _repository.getTodos();
       state = TodosState(
           todosList: AsyncValue.data(todos),
           isSortedByPriority: state.isSortedByPriority);
+      _originalTodos = todos;
+      _hasLoadedTodos = true;
     } catch (e, stackTrace) {
       state = TodosState(
           todosList: AsyncValue.error(e, stackTrace),
@@ -91,6 +94,7 @@ class TodosNotifier extends StateNotifier<TodosState> {
           todosList: AsyncValue.data(newTodosList),
           isSortedByPriority: state.isSortedByPriority,
         );
+        _originalTodos = newTodosList;
       }
     } catch (e, stackTrace) {
       removeLocalTodoItem(newTodo);
@@ -124,6 +128,7 @@ class TodosNotifier extends StateNotifier<TodosState> {
           todosList: AsyncValue.data(updatedTodosList),
           isSortedByPriority: state.isSortedByPriority,
         );
+        _originalTodos = updatedTodosList;
       }
     } catch (e, stackTrace) {
       state = TodosState(
@@ -156,20 +161,30 @@ class TodosNotifier extends StateNotifier<TodosState> {
   }
 
   void searchTodos(String searchTerm) {
-    final currentState = state.todosList;
-    if (currentState is AsyncData<List<ToDoItemModel>>) {
-      final filteredTodos = currentState.value
-          .where((todo) =>
-              todo.description.toLowerCase().contains(searchTerm.toLowerCase()))
-          .toList();
+    if (searchTerm.isEmpty) {
+      // Si no hay término de búsqueda, restablece a la lista original
       state = TodosState(
-        todosList: AsyncValue.data(filteredTodos),
+        todosList: AsyncValue.data(_originalTodos),
         isSortedByPriority: state.isSortedByPriority,
       );
+      return;
     }
+    // Filtrar la lista original según el término de búsqueda
+    final filteredTodos = _originalTodos
+        .where((todo) =>
+            todo.description.toLowerCase().contains(searchTerm.toLowerCase()))
+        .toList();
+    state = TodosState(
+      todosList: AsyncValue.data(filteredTodos),
+      isSortedByPriority: state.isSortedByPriority,
+    );
   }
 
   void resetSearch() {
-    _loadTodos();
+    // Restablecer la lista a su estado original
+    state = TodosState(
+      todosList: AsyncValue.data(_originalTodos),
+      isSortedByPriority: state.isSortedByPriority,
+    );
   }
 }

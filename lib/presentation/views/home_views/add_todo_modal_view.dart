@@ -1,7 +1,7 @@
 // En add_todo_modal.dart
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:zen_organizer/config/infrastructure/models/todos/todos_model.dart';
+import 'package:zen_organizer/config/infrastructure/models/todos_model.dart';
 
 class AddTodoModal extends StatefulWidget {
   final ToDoItemModel? existingTodo;

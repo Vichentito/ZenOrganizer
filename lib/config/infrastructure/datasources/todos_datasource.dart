@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:zen_organizer/config/domain/datasources/todos_datasource.dart';
-import 'package:zen_organizer/config/infrastructure/models/todos/todos_model.dart';
+import 'package:zen_organizer/config/infrastructure/models/todos_model.dart';
 
 class TodosdbDatasource extends TodosDataSource {
   final CollectionReference _todosCollection =
