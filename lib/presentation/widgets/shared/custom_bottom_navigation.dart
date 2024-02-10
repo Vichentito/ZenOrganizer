@@ -6,12 +6,21 @@ class CustomBottomNavigation extends StatelessWidget {
 
   int getCurrentIdex(BuildContext context) {
     final String location = GoRouterState.of(context).uri.toString();
+    if (location.startsWith('/notes/details/')) {
+      return 1;
+    }
     switch (location) {
       case '/':
         return 0;
       case '/notes':
         return 1;
-      case '/gastos':
+      case '/finanzas':
+        return 2;
+      case '/finanzas/gastosfijos':
+        return 2;
+      case '/finanzas/config':
+        return 2;
+      case '/finanzas/quincenaDetails':
         return 2;
       case '/plantas':
         return 3;
@@ -29,7 +38,7 @@ class CustomBottomNavigation extends StatelessWidget {
         context.go('/notes');
         break;
       case 2:
-        context.go('/gastos');
+        context.go('/finanzas');
         break;
       case 3:
         context.go('/plantas');
@@ -50,7 +59,7 @@ class CustomBottomNavigation extends StatelessWidget {
           BottomNavigationBarItem(
               icon: Icon(Icons.notes_rounded), label: 'Notas'),
           BottomNavigationBarItem(
-              icon: Icon(Icons.trending_up_rounded), label: 'Gastos'),
+              icon: Icon(Icons.trending_up_rounded), label: 'Finanzas'),
           BottomNavigationBarItem(
               icon: Icon(Icons.nature_rounded), label: 'Plantas'),
         ],

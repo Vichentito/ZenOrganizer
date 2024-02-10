@@ -43,13 +43,11 @@ class NoteDetailsViewState extends ConsumerState<NoteDetailsView> {
 
   void _saveNote() {
     noteFuture.then((note) {
-      print("Controller: ${titleController.text}");
       final updatedNote = note.copyWith(
         title: titleController.text,
         content: contentController.text,
         tags: editableTags,
       );
-      print(updatedNote.title);
       final originalNote = note;
       ref
           .read(notesStateProvider.notifier)

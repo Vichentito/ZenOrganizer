@@ -32,6 +32,37 @@ final appRouter = GoRouter(initialLocation: '/', routes: [
           ),
         ],
       ),
+      GoRoute(
+        path: '/finanzas',
+        builder: (context, state) {
+          return const QuincenasView();
+        },
+        routes: [
+          GoRoute(
+            path: 'gastosfijos',
+            builder: (context, state) {
+              return const GastosFijosView();
+            },
+          ),
+          GoRoute(
+            path: 'config',
+            builder: (context, state) {
+              return const ConfigView();
+            },
+          ),
+          GoRoute(
+            path: 'quincenaDetails',
+            builder: (context, state) {
+              final res = state.extra as Map<String, dynamic>;
+              return QuincenaDetailView(
+                planAnualId: res['planAnualId'],
+                quincenaInicio: DateTime.parse(res['quincenaInicio']),
+                quincenaFin: DateTime.parse(res['quincenaFin']),
+              );
+            },
+          ),
+        ],
+      )
     ],
   )
 ]);
