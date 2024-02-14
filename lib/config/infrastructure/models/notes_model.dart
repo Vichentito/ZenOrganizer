@@ -1,21 +1,19 @@
 import 'package:intl/intl.dart';
-import 'package:zen_organizer/config/domain/entities/note_item.dart';
 
-class NotesModel extends NoteItem {
+class NotesModel {
+  final String id;
+  final String title;
+  final String content;
+  final DateTime creationDate;
+  final List<String> tags;
+
   NotesModel({
-    required String id,
-    required String title,
-    required String content,
-    required DateTime creationDate,
-    List<String> tags = const [],
-  }) : super(
-          id: id,
-          title: title,
-          content: content,
-          creationDate: creationDate,
-          tags: tags,
-        );
-
+    required this.id,
+    required this.title,
+    required this.content,
+    required this.creationDate,
+    this.tags = const [],
+  });
   factory NotesModel.fromJson(Map<String, dynamic> json) {
     return NotesModel(
       id: json['id'],

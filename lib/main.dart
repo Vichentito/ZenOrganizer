@@ -1,3 +1,7 @@
+import 'package:zen_organizer/config/domain/datasources/notes_datasource.dart';
+import 'package:zen_organizer/config/infrastructure/datasources/notes_datasource.dart';
+import 'package:zen_organizer/presentation/blocs/notes_bloc/notes_bloc.dart';
+
 import 'firebase_options.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -13,18 +17,24 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   await dotenv.load(fileName: ".env");
-  runApp(const ProviderScope(
-    child: MyApp(),
+  final NotesDataSource dataSource = NotesdbDatasource();
+  final NotesBloc notesBloc = NotesBloc(dataSource);
+  runApp(ProviderScope(
+    child: MyApp(
+      notesBloc: notesBloc,
+    ),
   ));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final NotesBloc notesBloc;
+
+  const MyApp({Key? key, required this.notesBloc}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-        routerConfig: appRouter,
+        routerConfig: createAppRouter(notesBloc),
         debugShowCheckedModeBanner: false,
         theme: AppTheme().getTheme(),
         title: 'ZenOrginizer',

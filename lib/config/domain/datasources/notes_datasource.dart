@@ -4,6 +4,6 @@ abstract class NotesDataSource {
   Future<List<NotesModel>> getNotes();
   Future<NotesModel> getNoteById(String id);
   Future<NotesModel> createNote(NotesModel noteItem);
-  Future<NotesModel> updateNote(String id, NotesModel noteItem);
+  Future<NotesModel> updateNote(NotesModel noteItem);
   Future<void> deleteNote(String id);
 }

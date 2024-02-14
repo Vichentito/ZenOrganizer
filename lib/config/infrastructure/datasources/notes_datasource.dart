@@ -21,7 +21,9 @@ class NotesdbDatasource extends NotesDataSource {
   Future<NotesModel> getNoteById(String id) async {
     final docSnapshot = await _notesCollection.doc(id).get();
     if (docSnapshot.exists && docSnapshot.data() != null) {
-      return NotesModel.fromJson(docSnapshot.data() as Map<String, dynamic>);
+      final data = docSnapshot.data() as Map<String, dynamic>;
+      data['id'] = docSnapshot.id;
+      return NotesModel.fromJson(data);
     }
     throw Exception('ToDoItem not found');
   }
@@ -37,11 +39,11 @@ class NotesdbDatasource extends NotesDataSource {
   }
 
   @override
-  Future<NotesModel> updateNote(String id, NotesModel noteItem) async {
-    await _notesCollection.doc(id).update(noteItem.toJson());
+  Future<NotesModel> updateNote(NotesModel noteItem) async {
+    await _notesCollection.doc(noteItem.id).update(noteItem.toJson());
     return NotesModel.fromJson({
       ...noteItem.toJson(),
-      'id': id,
+      'id': noteItem.id,
     });
   }
 }

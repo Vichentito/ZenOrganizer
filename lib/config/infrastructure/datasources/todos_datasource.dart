@@ -37,11 +37,11 @@ class TodosdbDatasource extends TodosDataSource {
   }
 
   @override
-  Future<ToDoItemModel> updateTodo(String id, ToDoItemModel todoItem) async {
-    await _todosCollection.doc(id).update(todoItem.toJson());
+  Future<ToDoItemModel> updateTodo(ToDoItemModel todoItem) async {
+    await _todosCollection.doc(todoItem.id).update(todoItem.toJson());
     return ToDoItemModel.fromJson({
       ...todoItem.toJson(),
-      'id': id,
+      'id': todoItem.id,
     });
   }
 }
