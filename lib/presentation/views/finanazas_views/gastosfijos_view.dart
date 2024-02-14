@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import 'package:zen_organizer/config/infrastructure/models/finanzas/gasto_fijo_item.dart';
 import 'package:zen_organizer/presentation/providers/finanzas/gastos_fijos_providers.dart';
 import 'package:zen_organizer/presentation/views/finanazas_views/add_gastofijo_modal.dart';

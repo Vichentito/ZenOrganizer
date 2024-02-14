@@ -1,9 +1,6 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:zen_organizer/config/domain/datasources/notes_datasource.dart';
-import 'package:zen_organizer/config/infrastructure/datasources/notes_datasource.dart';
 import 'package:zen_organizer/config/infrastructure/models/notes_model.dart';
 import 'package:zen_organizer/presentation/blocs/notes_bloc/notes_bloc.dart';
 
