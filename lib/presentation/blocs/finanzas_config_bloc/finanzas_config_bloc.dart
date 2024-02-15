@@ -8,17 +8,20 @@ part 'finanzas_config_state.dart';
 
 class FinanzasConfigBloc
     extends Bloc<FinanzasConfigEvent, FinanzasConfigState> {
-  final ConfigDataSource dataSource;
+  final ConfigDataSource configDataSource;
+  final AguinaldoDataSource aguinaldoDataSource;
 
-  FinanzasConfigBloc(this.dataSource) : super(FinanzasConfigInitial()) {
+  FinanzasConfigBloc(this.configDataSource, this.aguinaldoDataSource)
+      : super(FinanzasConfigInitial()) {
     on<LoadConfig>(_onLoadConfig);
   }
 
   Future<void> _onLoadConfig(
       LoadConfig event, Emitter<FinanzasConfigState> emit) async {
     try {
-      final config = await dataSource.getConfig();
-      emit(FinanzasConfigLoaded(config));
+      final config = await configDataSource.getConfig();
+      final aguinaldo = await aguinaldoDataSource.getAguinaldo();
+      emit(FinanzasConfigLoaded(config, aguinaldo));
     } catch (error) {
       // Maneja el error como prefieras
     }

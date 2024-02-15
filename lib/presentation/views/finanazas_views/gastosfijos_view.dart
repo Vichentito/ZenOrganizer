@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import 'package:zen_organizer/config/infrastructure/models/finanzas/gasto_fijo_item.dart';
-import 'package:zen_organizer/presentation/providers/finanzas/gastos_fijos_providers.dart';
+import 'package:zen_organizer/presentation/blocs/gastos_fijos_bloc/gastos_fijos_bloc.dart';
 import 'package:zen_organizer/presentation/views/finanazas_views/add_gastofijo_modal.dart';
 import 'package:zen_organizer/presentation/views/finanazas_views/gastofijo_item.dart';
 import 'package:zen_organizer/presentation/widgets/shared/finanzas_drawer_menu.dart';
@@ -18,7 +18,8 @@ class GastosFijosViewState extends ConsumerState<GastosFijosView> {
   @override
   void initState() {
     super.initState();
-    ref.read(gastosFijosStateProvider.notifier).loadGastos();
+    BlocProvider.of<GastosFijosBloc>(context, listen: false)
+        .add(LoadGastosFijos());
   }
 
   void _showAddGastoModal(BuildContext context) {
@@ -33,9 +34,8 @@ class GastosFijosViewState extends ConsumerState<GastosFijosView> {
             montoTotal: montoTotal,
             grupoPagos: grupoPagos,
           );
-          ref
-              .read(gastosFijosStateProvider.notifier)
-              .addGastoInFirestore(newGastoFijo);
+          BlocProvider.of<GastosFijosBloc>(context, listen: false)
+              .add(AddGastoFijo(newGastoFijo));
         });
       },
     );
@@ -43,31 +43,28 @@ class GastosFijosViewState extends ConsumerState<GastosFijosView> {
 
   @override
   Widget build(BuildContext context) {
-    final gastosFijosState = ref.watch(gastosFijosStateProvider);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Gastos Fijos'),
       ),
-      body: gastosFijosState.gastosFijosList.when(
-          data: (gastosList) {
+      body: BlocBuilder<GastosFijosBloc, GastosFijosState>(
+        builder: (context, state) {
+          if (state is GastosFijosLoading) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (state is GastosFijosContent) {
             return ListView.builder(
-              itemCount: gastosList.length,
-              itemBuilder: ((context, index) {
-                final gasto = gastosList[index];
-                return GastoFijoItem(
-                  gastoFijo: gasto,
-                );
-              }),
+              itemCount: state.gastosFijos.length,
+              itemBuilder: (context, index) {
+                final gasto = state.gastosFijos[index];
+                return GastoFijoItem(gastoFijo: gasto);
+              },
             );
-          },
-          error: (err, stack) => Center(
-                child: Text('Error: $err'),
-              ),
-          loading: () {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }),
+          } else if (state is GastosFijosError) {
+            return Center(child: Text('Error: ${state.message}'));
+          }
+          return const Center(child: Text('No se han cargado los datos.'));
+        },
+      ),
       drawer: const FinanzasDrawerMenu(),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddGastoModal(context),

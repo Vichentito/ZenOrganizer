@@ -1,20 +1,19 @@
 import 'package:intl/intl.dart';
-import 'package:zen_organizer/config/domain/entities/todo_item.dart';
 
-class ToDoItemModel extends ToDoItem {
+class ToDoItemModel {
+  final String id;
+  final String description;
+  final DateTime dueDate;
+  final bool isCompleted;
+  final int priority;
+
   ToDoItemModel({
-    required String id,
-    required String description,
-    required DateTime dueDate,
-    bool isCompleted = false,
-    int priority = 1,
-  }) : super(
-          id: id,
-          description: description,
-          dueDate: DateTime(dueDate.year, dueDate.month, dueDate.day),
-          isCompleted: isCompleted,
-          priority: priority,
-        );
+    required this.id,
+    required this.description,
+    required this.dueDate,
+    this.isCompleted = false,
+    this.priority = 1,
+  });
 
   factory ToDoItemModel.fromJson(Map<String, dynamic> json) {
     return ToDoItemModel(
