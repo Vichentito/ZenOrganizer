@@ -1,10 +1,17 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:zen_organizer/presentation/blocs/finanzas_config_bloc/finanzas_config_bloc.dart';
+import 'package:zen_organizer/presentation/blocs/gastos_fijos_bloc/gastos_fijos_bloc.dart';
 import 'package:zen_organizer/presentation/blocs/notes_bloc/notes_bloc.dart';
+import 'package:zen_organizer/presentation/blocs/plan_anual_bloc/plan_anual_bloc.dart';
 import 'package:zen_organizer/presentation/screens/screens.dart';
 import 'package:zen_organizer/presentation/views/views.dart';
 
-GoRouter createAppRouter(NotesBloc notesBloc) {
+GoRouter createAppRouter(
+    NotesBloc notesBloc,
+    FinanzasConfigBloc finanzasConfigBloc,
+    GastosFijosBloc gastosFijosBloc,
+    PlanAnualBloc planAnualBloc) {
   return GoRouter(initialLocation: '/', routes: [
     ShellRoute(
       builder: (context, state, child) {
@@ -37,9 +44,14 @@ GoRouter createAppRouter(NotesBloc notesBloc) {
         ),
         GoRoute(
           path: '/finanzas',
-          builder: (context, state) {
-            return const QuincenasView();
-          },
+          builder: (context, state) => MultiBlocProvider(
+            providers: [
+              BlocProvider.value(value: finanzasConfigBloc),
+              BlocProvider.value(value: gastosFijosBloc),
+              BlocProvider.value(value: planAnualBloc),
+            ],
+            child: const QuincenasView(),
+          ),
           routes: [
             GoRoute(
               path: 'gastosfijos',
@@ -50,7 +62,7 @@ GoRouter createAppRouter(NotesBloc notesBloc) {
             GoRoute(
               path: 'config',
               builder: (context, state) {
-                return const ConfigView();
+                return const ConfigViewBody();
               },
             ),
             GoRoute(

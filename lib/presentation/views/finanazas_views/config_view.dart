@@ -1,18 +1,35 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:zen_organizer/config/domain/datasources/finanzas/config_datasource.dart';
+import 'package:zen_organizer/config/infrastructure/datasources/finanzas/config_datasoruce.dart';
 import 'package:zen_organizer/config/infrastructure/models/finanzas/config_model.dart';
-import 'package:zen_organizer/presentation/providers/finanzas/config_provider.dart';
-import 'package:zen_organizer/presentation/providers/finanzas/plan_anual_providers.dart';
+import 'package:zen_organizer/presentation/blocs/finanzas_config_bloc/finanzas_config_bloc.dart';
 import 'package:zen_organizer/presentation/widgets/shared/finanzas_drawer_menu.dart';
 
-class ConfigView extends ConsumerStatefulWidget {
-  const ConfigView({super.key});
+class ConfigView extends StatelessWidget {
+  const ConfigView({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    // Asegúrate de tener una instancia de tu fuente de datos.
+    final ConfigDataSource dataSource = ConfigdbDatasource();
+    final AguinaldoDataSource aguinaldoDataSource = AguinaldodbDatasource();
+
+    return BlocProvider(
+      create: (_) => FinanzasConfigBloc(dataSource, aguinaldoDataSource),
+      child: const ConfigViewBody(),
+    );
+  }
+}
+
+class ConfigViewBody extends StatefulWidget {
+  const ConfigViewBody({super.key});
 
   @override
   ConfigViewState createState() => ConfigViewState();
 }
 
-class ConfigViewState extends ConsumerState<ConfigView> {
+class ConfigViewState extends State<ConfigViewBody> {
   final _salaryController = TextEditingController();
   final _aguinaldoController = TextEditingController();
   final _aguinaldoPagadoController = TextEditingController();
@@ -20,8 +37,7 @@ class ConfigViewState extends ConsumerState<ConfigView> {
   @override
   void initState() {
     super.initState();
-    ref.read(configStateProvider.notifier).loadConfig();
-    ref.read(aguinaldoStateProvider.notifier).loadAguinaldo();
+    context.read<FinanzasConfigBloc>().add(LoadConfig());
   }
 
   @override
@@ -34,17 +50,23 @@ class ConfigViewState extends ConsumerState<ConfigView> {
 
   @override
   Widget build(BuildContext context) {
-    final configAsyncValue = ref.watch(configStateProvider).config;
-    final aguinaldoAsyncValue = ref.watch(aguinaldoStateProvider).aguinaldo;
+    final config = context.select((FinanzasConfigBloc bloc) =>
+        (bloc.state is FinanzasConfigLoaded)
+            ? (bloc.state as FinanzasConfigLoaded).config
+            : null);
+    final aguinaldo = context.select((FinanzasConfigBloc bloc) =>
+        (bloc.state is FinanzasConfigLoaded)
+            ? (bloc.state as FinanzasConfigLoaded).aguinaldo
+            : null);
 
-    configAsyncValue.whenData((data) {
-      _salaryController.text = data.sueldo.toString();
-    });
+    if (config != null) {
+      _salaryController.text = config.sueldo.toString();
+    }
 
-    aguinaldoAsyncValue.whenData((data) {
-      _aguinaldoController.text = data.monto.toString();
-      _aguinaldoPagadoController.text = data.estado;
-    });
+    if (aguinaldo != null) {
+      _aguinaldoController.text = aguinaldo.monto.toString();
+      _aguinaldoPagadoController.text = aguinaldo.estado;
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -88,41 +110,41 @@ class ConfigViewState extends ConsumerState<ConfigView> {
                   return null;
                 },
               ),
-              ElevatedButton(
-                onPressed: () {
-                  final salary = double.tryParse(_salaryController.text);
-                  final aguinaldo = double.tryParse(_aguinaldoController.text);
-                  final aguinaldoPagado =
-                      _aguinaldoPagadoController.text.toString();
+              // ElevatedButton(
+              // onPressed: () {
+              //   final salary = double.tryParse(_salaryController.text);
+              //   final aguinaldo = double.tryParse(_aguinaldoController.text);
+              //   final aguinaldoPagado =
+              //       _aguinaldoPagadoController.text.toString();
 
-                  if (salary != null && aguinaldo != null) {
-                    final currentConfig =
-                        ref.watch(configStateProvider).config.value;
-                    final currentAguinaldo =
-                        ref.watch(aguinaldoStateProvider).aguinaldo.value;
+              // if (salary != null && aguinaldo != null) {
+              //   final currentConfig =
+              //       ref.watch(configStateProvider).config.value;
+              //   final currentAguinaldo =
+              //       ref.watch(aguinaldoStateProvider).aguinaldo.value;
 
-                    final updatedConfig = ConfigModel(
-                      id: currentConfig!.id, // conserva el id actual
-                      sueldo: salary,
-                    );
+              //   final updatedConfig = ConfigModel(
+              //     id: currentConfig!.id, // conserva el id actual
+              //     sueldo: salary,
+              //   );
 
-                    final updatedAguinaldo = AguinaldoModel(
-                      id: currentAguinaldo!.id,
-                      monto: aguinaldo,
-                      fecha: currentAguinaldo.fecha,
-                      estado: aguinaldoPagado,
-                    );
+              //   final updatedAguinaldo = AguinaldoModel(
+              //     id: currentAguinaldo!.id,
+              //     monto: aguinaldo,
+              //     fecha: currentAguinaldo.fecha,
+              //     estado: aguinaldoPagado,
+              //   );
 
-                    ref
-                        .read(configStateProvider.notifier)
-                        .updateConfigInFirestore(updatedConfig);
-                    ref
-                        .read(aguinaldoStateProvider.notifier)
-                        .updateAguinaldoInFirestore(updatedAguinaldo);
-                  }
-                },
-                child: const Text('Guardar'),
-              ),
+              //   ref
+              //       .read(configStateProvider.notifier)
+              //       .updateConfigInFirestore(updatedConfig);
+              //   ref
+              //       .read(aguinaldoStateProvider.notifier)
+              //       .updateAguinaldoInFirestore(updatedAguinaldo);
+              // }
+              // },
+              // child: const Text('Guardar'),
+              // ),
               ElevatedButton(
                 onPressed: _generateAnnualPlan,
                 child: const Text('Generar plan anual'),
@@ -136,6 +158,6 @@ class ConfigViewState extends ConsumerState<ConfigView> {
   }
 
   void _generateAnnualPlan() {
-    ref.read(planAnualStateProvider.notifier).createFullYear();
+    //ref.read(planAnualStateProvider.notifier).createFullYear();
   }
 }

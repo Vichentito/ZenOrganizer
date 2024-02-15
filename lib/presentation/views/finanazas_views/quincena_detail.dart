@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:zen_organizer/config/infrastructure/models/finanzas/plan_anual.dart';
-import 'package:zen_organizer/presentation/providers/finanzas/config_provider.dart';
+import 'package:zen_organizer/presentation/blocs/finanzas_config_bloc/finanzas_config_bloc.dart';
+import 'package:zen_organizer/presentation/blocs/plan_anual_bloc/plan_anual_bloc.dart';
 import 'package:zen_organizer/presentation/providers/finanzas/plan_anual_providers.dart';
-import 'package:zen_organizer/presentation/views/finanazas_views/transaccion_from_view.dart'; // Asegúrate de importar correctamente tu modelo Quincena
+import 'package:zen_organizer/presentation/views/finanazas_views/transaccion_from_view.dart';
+import 'package:zen_organizer/presentation/widgets/shared/finanzas_drawer_menu.dart'; // Asegúrate de importar correctamente tu modelo Quincena
 
 class QuincenaDetailView extends ConsumerStatefulWidget {
   final String planAnualId;
@@ -30,53 +33,62 @@ class QuincenaDetailViewState extends ConsumerState<QuincenaDetailView> {
   @override
   void initState() {
     super.initState();
-    ref.read(configStateProvider.notifier).loadConfig();
+    context.read<PlanAnualBloc>().add(LoadPlanesAnuales());
+    context.read<FinanzasConfigBloc>().add(LoadConfig());
   }
 
   @override
   Widget build(BuildContext context) {
-    final planAnualState = ref.watch(planAnualStateProvider);
-    final configAsyncValue = ref.watch(configStateProvider).config;
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Detalles de Quincena'),
+      ),
+      body: BlocBuilder<PlanAnualBloc, PlanAnualState>(
+        builder: (context, state) {
+          if (state is PlanAnualLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (state is PlanAnualLoaded) {
+            final PlanAnualModel specificPlan = state.planesAnuales
+                .firstWhere((plan) => plan.id == widget.planAnualId);
+            final Quincena specificQuincena = specificPlan.quincenas.firstWhere(
+                (quincena) =>
+                    quincena.fechaInicio == widget.quincenaInicio &&
+                    quincena.fechaFin == widget.quincenaFin);
+            return BlocBuilder<FinanzasConfigBloc, FinanzasConfigState>(
+              builder: (context, configState) {
+                double sueldo = 0.0;
+                if (configState is FinanzasConfigLoaded) {
+                  sueldo = configState.config
+                      .sueldo; // Asumiendo que el estado tiene una propiedad `sueldo`
+                }
 
-    return planAnualState.planAnualList.when(
-      data: (plans) {
-        final specificPlan = plans.firstWhere(
-          (plan) => plan.id == widget.planAnualId,
-          orElse: () => PlanAnualModel(id: '', ano: DateTime.now().year),
-        );
+                // A partir de aquí, tu lógica existente para construir la UI con `specificPlan` y `specificQuincena`
+                return SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: _buildCustomTable(specificQuincena, sueldo),
+                  ),
+                );
+              },
+            );
+          }
 
-        final specificQuincena = specificPlan.quincenas.firstWhere(
-          (quincena) =>
-              quincena.fechaInicio == widget.quincenaInicio &&
-              quincena.fechaFin == widget.quincenaFin,
-          orElse: () =>
-              Quincena(fechaInicio: DateTime.now(), fechaFin: DateTime.now()),
-        );
+          // Manejo de estado de error
+          if (state is PlanAnualError) {
+            return Center(child: Text('Error: ${state.message}'));
+          }
 
-        double sueldo = 0.0;
-        configAsyncValue.whenData((data) {
-          sueldo = data.sueldo;
-        });
-
-        return Scaffold(
-          appBar: AppBar(
-            title: const Text('Detalles de Quincena'),
-          ),
-          body: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: _buildCustomTable(specificQuincena, sueldo),
-            ),
-          ),
-          floatingActionButton: FloatingActionButton(
-            onPressed: () => _addNewTransaction(specificPlan, specificQuincena),
-            tooltip: 'Agregar Transacción',
-            child: const Icon(Icons.add),
-          ),
-        );
-      },
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, stack) => Center(child: Text('Error: $error')),
+          // Estado predeterminado si no se reconoce el estado actual
+          return const Center(child: Text('Estado no reconocido'));
+        },
+      ),
+      drawer: const FinanzasDrawerMenu(),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _addNewTransaction(specificPlan, specificQuincena),
+        tooltip: 'Agregar Transacción',
+        child: const Icon(Icons.add),
+      ),
     );
   }
 

@@ -1,8 +1,7 @@
 part of 'finanzas_config_bloc.dart';
 
-sealed class FinanzasConfigEvent extends Equatable {
+abstract class FinanzasConfigEvent {
   const FinanzasConfigEvent();
-
-  @override
-  List<Object> get props => [];
 }
+
+class LoadConfig extends FinanzasConfigEvent {}

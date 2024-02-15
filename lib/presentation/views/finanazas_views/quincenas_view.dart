@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:zen_organizer/config/infrastructure/models/finanzas/plan_anual.dart';
-import 'package:zen_organizer/presentation/providers/finanzas/config_provider.dart';
-import 'package:zen_organizer/presentation/providers/finanzas/plan_anual_providers.dart';
+import 'package:zen_organizer/presentation/blocs/finanzas_config_bloc/finanzas_config_bloc.dart';
+import 'package:zen_organizer/presentation/blocs/plan_anual_bloc/plan_anual_bloc.dart';
 import 'package:zen_organizer/presentation/views/finanazas_views/quincena_item.dart';
 import 'package:zen_organizer/presentation/widgets/shared/finanzas_drawer_menu.dart';
 
-class QuincenasView extends ConsumerStatefulWidget {
-  const QuincenasView({super.key});
+class QuincenasView extends StatefulWidget {
+  const QuincenasView({Key? key}) : super(key: key);
 
   @override
   QuincenasViewState createState() => QuincenasViewState();
 }
 
-class QuincenasViewState extends ConsumerState<QuincenasView> {
+class QuincenasViewState extends State<QuincenasView> {
   double sueldo = 0.0;
   int? selectedYear;
 
@@ -21,50 +21,57 @@ class QuincenasViewState extends ConsumerState<QuincenasView> {
   void initState() {
     super.initState();
     selectedYear = DateTime.now().year;
-    ref.read(planAnualStateProvider.notifier).loadPlanes();
-    ref.read(configStateProvider.notifier).loadConfig();
+    // Asumiendo que los Blocs están disponibles en el árbol de widgets
+    context.read<PlanAnualBloc>().add(LoadPlanesAnuales());
+    context.read<FinanzasConfigBloc>().add(LoadConfig());
   }
 
   @override
   Widget build(BuildContext context) {
-    final planAnualState = ref.watch(planAnualStateProvider);
-    final configAsyncValue = ref.watch(configStateProvider).config;
-
-    configAsyncValue.whenData((data) {
-      sueldo = data.sueldo;
-    });
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Quincenas'),
         actions: <Widget>[
-          _buildYearDropdown(planAnualState.planAnualList.value ?? []),
+          BlocBuilder<PlanAnualBloc, PlanAnualState>(
+            builder: (context, state) {
+              if (state is PlanAnualLoaded) {
+                return _buildYearDropdown(state.planesAnuales);
+              }
+              return Container(); // Retorna un contenedor vacío si no hay datos
+            },
+          ),
         ],
       ),
-      body: planAnualState.planAnualList.when(
-        data: (listaPlanesAnuales) {
-          PlanAnualModel currentPlan = listaPlanesAnuales
-              .firstWhere((element) => element.ano == selectedYear);
-          List<Quincena> quincenasFiltradas = selectedYear == null
-              ? listaPlanesAnuales.expand((p) => p.quincenas).toList()
-              : listaPlanesAnuales
-                  .where((p) => p.ano == selectedYear)
-                  .expand((p) => p.quincenas)
-                  .toList();
+      body: BlocBuilder<PlanAnualBloc, PlanAnualState>(
+        builder: (context, state) {
+          if (state is PlanAnualLoaded) {
+            // Asume que sueldo se actualiza desde ConfigBloc
+            // Esto podría requerir un BlocListener o una lógica similar para actualizar `sueldo`
+            List<Quincena> quincenasFiltradas = state.planesAnuales
+                .where((p) => p.ano == selectedYear)
+                .expand((p) => p.quincenas)
+                .toList();
 
-          return ListView.builder(
-            itemCount: quincenasFiltradas.length,
-            itemBuilder: (context, index) {
-              return QuincenaItem(
-                planAnual: currentPlan,
-                quincena: quincenasFiltradas[index],
-                salario: sueldo,
-              );
-            },
-          );
+            PlanAnualModel currentPlan = state.planesAnuales
+                .firstWhere((element) => element.ano == selectedYear);
+
+            return ListView.builder(
+              itemCount: quincenasFiltradas.length,
+              itemBuilder: (context, index) {
+                return QuincenaItem(
+                  planAnual: currentPlan,
+                  quincena: quincenasFiltradas[index],
+                  salario: sueldo,
+                );
+              },
+            );
+          } else if (state is PlanAnualLoading) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (state is PlanAnualError) {
+            return Center(child: Text('Error: ${state.message}'));
+          }
+          return const Center(child: Text('No se han cargado los datos.'));
         },
-        error: (err, stack) => Center(child: Text('Error: $err')),
-        loading: () => const Center(child: CircularProgressIndicator()),
       ),
       drawer: const FinanzasDrawerMenu(),
     );
@@ -80,6 +87,7 @@ class QuincenasViewState extends ConsumerState<QuincenasView> {
         setState(() {
           selectedYear = newValue;
         });
+        // Opcional: Añade lógica aquí si necesitas recargar datos basados en el año seleccionado
       },
       items: years.map<DropdownMenuItem<int>>((int value) {
         return DropdownMenuItem<int>(
