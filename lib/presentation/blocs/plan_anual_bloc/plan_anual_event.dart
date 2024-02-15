@@ -9,6 +9,36 @@ abstract class PlanAnualEvent extends Equatable {
 
 class LoadPlanesAnuales extends PlanAnualEvent {}
 
+class AddTransaccion extends PlanAnualEvent {
+  final String planAnualId;
+  final DateTime quincenaInicio;
+  final DateTime quincenaFin;
+  final Transaccion newTransaccion;
+
+  const AddTransaccion({
+    required this.planAnualId,
+    required this.quincenaInicio,
+    required this.quincenaFin,
+    required this.newTransaccion,
+  });
+}
+
+class UpdateTransaccionAmount extends PlanAnualEvent {
+  final String planAnualId;
+  final DateTime quincenaInicio;
+  final DateTime quincenaFin;
+  final int transaccionIndex;
+  final double newAmount;
+
+  const UpdateTransaccionAmount({
+    required this.planAnualId,
+    required this.quincenaInicio,
+    required this.quincenaFin,
+    required this.transaccionIndex,
+    required this.newAmount,
+  });
+}
+
 class SelectQuincena extends PlanAnualEvent {
   final Quincena quincena;
 

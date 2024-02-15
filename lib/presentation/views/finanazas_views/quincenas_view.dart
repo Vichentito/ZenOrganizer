@@ -28,6 +28,12 @@ class QuincenasViewState extends State<QuincenasView> {
 
   @override
   Widget build(BuildContext context) {
+    final salarioBloc = BlocProvider.of<FinanzasConfigBloc>(context);
+    final salarioState = salarioBloc.state;
+
+    if (salarioState is FinanzasConfigLoaded) {
+      sueldo = salarioState.config.sueldo;
+    }
     return Scaffold(
       appBar: AppBar(
         title: const Text('Quincenas'),
@@ -45,8 +51,6 @@ class QuincenasViewState extends State<QuincenasView> {
       body: BlocBuilder<PlanAnualBloc, PlanAnualState>(
         builder: (context, state) {
           if (state is PlanAnualLoaded) {
-            // Asume que sueldo se actualiza desde ConfigBloc
-            // Esto podría requerir un BlocListener o una lógica similar para actualizar `sueldo`
             List<Quincena> quincenasFiltradas = state.planesAnuales
                 .where((p) => p.ano == selectedYear)
                 .expand((p) => p.quincenas)

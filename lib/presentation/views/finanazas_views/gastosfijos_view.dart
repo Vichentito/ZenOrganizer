@@ -18,8 +18,7 @@ class GastosFijosViewState extends ConsumerState<GastosFijosView> {
   @override
   void initState() {
     super.initState();
-    BlocProvider.of<GastosFijosBloc>(context, listen: false)
-        .add(LoadGastosFijos());
+    context.read<GastosFijosBloc>().add(LoadGastosFijos());
   }
 
   void _showAddGastoModal(BuildContext context) {
@@ -34,8 +33,7 @@ class GastosFijosViewState extends ConsumerState<GastosFijosView> {
             montoTotal: montoTotal,
             grupoPagos: grupoPagos,
           );
-          BlocProvider.of<GastosFijosBloc>(context, listen: false)
-              .add(AddGastoFijo(newGastoFijo));
+          context.read<GastosFijosBloc>().add(AddGastoFijo(newGastoFijo));
         });
       },
     );

@@ -43,7 +43,7 @@ class PlanAnualModel {
 class Quincena {
   final DateTime fechaInicio;
   final DateTime fechaFin;
-  final List<Transaccion> transacciones;
+  List<Transaccion> transacciones;
   final double total;
 
   Quincena({

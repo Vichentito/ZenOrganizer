@@ -12,6 +12,11 @@ GoRouter createAppRouter(
     FinanzasConfigBloc finanzasConfigBloc,
     GastosFijosBloc gastosFijosBloc,
     PlanAnualBloc planAnualBloc) {
+  final providers = [
+    BlocProvider.value(value: finanzasConfigBloc),
+    BlocProvider.value(value: gastosFijosBloc),
+    BlocProvider.value(value: planAnualBloc),
+  ];
   return GoRouter(initialLocation: '/', routes: [
     ShellRoute(
       builder: (context, state, child) {
@@ -45,34 +50,35 @@ GoRouter createAppRouter(
         GoRoute(
           path: '/finanzas',
           builder: (context, state) => MultiBlocProvider(
-            providers: [
-              BlocProvider.value(value: finanzasConfigBloc),
-              BlocProvider.value(value: gastosFijosBloc),
-              BlocProvider.value(value: planAnualBloc),
-            ],
+            providers: providers,
             child: const QuincenasView(),
           ),
           routes: [
             GoRoute(
               path: 'gastosfijos',
               builder: (context, state) {
-                return const GastosFijosView();
+                return MultiBlocProvider(
+                    providers: providers, child: const GastosFijosView());
               },
             ),
             GoRoute(
               path: 'config',
               builder: (context, state) {
-                return const ConfigViewBody();
+                return MultiBlocProvider(
+                    providers: providers, child: const ConfigView());
               },
             ),
             GoRoute(
               path: 'quincenaDetails',
               builder: (context, state) {
                 final res = state.extra as Map<String, dynamic>;
-                return QuincenaDetailView(
-                  planAnualId: res['planAnualId'],
-                  quincenaInicio: DateTime.parse(res['quincenaInicio']),
-                  quincenaFin: DateTime.parse(res['quincenaFin']),
+                return MultiBlocProvider(
+                  providers: providers,
+                  child: QuincenaDetailView(
+                    planAnualId: res['planAnualId'],
+                    quincenaInicio: DateTime.parse(res['quincenaInicio']),
+                    quincenaFin: DateTime.parse(res['quincenaFin']),
+                  ),
                 );
               },
             ),

@@ -15,6 +15,8 @@ class PlanAnualBloc extends Bloc<PlanAnualEvent, PlanAnualState> {
     on<AddPlanAnual>(_onAddPlanAnual);
     on<UpdatePlanAnual>(_onUpdatePlanAnual);
     on<DeletePlanAnual>(_onDeletePlanAnual);
+    on<AddTransaccion>(_onAddTransaccion);
+    on<UpdateTransaccionAmount>(_onUpdateTransaccionAmount);
   }
 
   Future<void> _onLoadPlanesAnuales(
@@ -32,6 +34,88 @@ class PlanAnualBloc extends Bloc<PlanAnualEvent, PlanAnualState> {
     final currentState = state;
     if (currentState is PlanAnualLoaded) {
       emit(currentState.copyWith(selectedQuincena: event.quincena));
+    }
+  }
+
+  void _onAddTransaccion(AddTransaccion event, Emitter<PlanAnualState> emit) {
+    if (state is PlanAnualLoaded) {
+      final currentState = state as PlanAnualLoaded;
+      try {
+        final List<PlanAnualModel> updatedPlanes =
+            List.from(currentState.planesAnuales);
+        final planIndex =
+            updatedPlanes.indexWhere((plan) => plan.id == event.planAnualId);
+
+        if (planIndex != -1) {
+          final PlanAnualModel plan = updatedPlanes[planIndex];
+          final quincenaIndex = plan.quincenas.indexWhere(
+            (quincena) =>
+                quincena.fechaInicio == event.quincenaInicio &&
+                quincena.fechaFin == event.quincenaFin,
+          );
+
+          if (quincenaIndex != -1) {
+            final Quincena updatedQuincena =
+                plan.quincenas[quincenaIndex].copyWith(
+              transacciones:
+                  List.from(plan.quincenas[quincenaIndex].transacciones)
+                    ..add(event.newTransaccion),
+            );
+
+            final PlanAnualModel updatedPlan = plan.copyWith(
+              quincenas: List.from(plan.quincenas)
+                ..[quincenaIndex] = updatedQuincena,
+            );
+
+            updatedPlanes[planIndex] = updatedPlan;
+            dataSource.updatePlanAnual(event.planAnualId, updatedPlan);
+            add(LoadPlanesAnuales());
+            emit(PlanAnualLoaded(planesAnuales: updatedPlanes));
+          }
+        }
+      } catch (error) {
+        emit(const PlanAnualError("No se pudo agregar la transacción"));
+      }
+    }
+  }
+
+  void _onUpdateTransaccionAmount(
+      UpdateTransaccionAmount event, Emitter<PlanAnualState> emit) {
+    if (state is PlanAnualLoaded) {
+      final currentState = state as PlanAnualLoaded;
+      final List<PlanAnualModel> updatedPlanes =
+          List.from(currentState.planesAnuales);
+      final planIndex =
+          updatedPlanes.indexWhere((plan) => plan.id == event.planAnualId);
+
+      if (planIndex != -1) {
+        final PlanAnualModel plan = updatedPlanes[planIndex];
+        final quincenaIndex = plan.quincenas.indexWhere(
+          (quincena) =>
+              quincena.fechaInicio == event.quincenaInicio &&
+              quincena.fechaFin == event.quincenaFin,
+        );
+
+        if (quincenaIndex != -1) {
+          final Quincena updatedQuincena = plan.quincenas[quincenaIndex];
+          final List<Transaccion> updatedTransacciones =
+              List.from(updatedQuincena.transacciones);
+
+          if (event.transaccionIndex >= 0 &&
+              event.transaccionIndex < updatedTransacciones.length) {
+            updatedTransacciones[event.transaccionIndex] =
+                updatedTransacciones[event.transaccionIndex]
+                    .copyWith(monto: event.newAmount);
+            updatedQuincena.transacciones = updatedTransacciones;
+
+            plan.quincenas[quincenaIndex] = updatedQuincena;
+            updatedPlanes[planIndex] = plan;
+            dataSource.updatePlanAnual(event.planAnualId, plan);
+            add(LoadPlanesAnuales());
+            emit(PlanAnualLoaded(planesAnuales: updatedPlanes));
+          }
+        }
+      }
     }
   }
 

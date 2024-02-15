@@ -1,18 +1,32 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:zen_organizer/config/domain/datasources/finanzas/gasto_fijo_item_datasource.dart';
+import 'package:zen_organizer/config/infrastructure/datasources/finanzas/gasto_fijo_item_datasource.dart';
 import 'package:zen_organizer/config/infrastructure/models/finanzas/gasto_fijo_item.dart';
 import 'package:zen_organizer/config/infrastructure/models/finanzas/plan_anual.dart';
-import 'package:zen_organizer/presentation/providers/finanzas/gastos_fijos_providers.dart';
+import 'package:zen_organizer/presentation/blocs/gastos_fijos_bloc/gastos_fijos_bloc.dart';
 
-class TransactionFormView extends ConsumerStatefulWidget {
-  const TransactionFormView({super.key});
+class TransactionFormView extends StatelessWidget {
+  TransactionFormView({Key? key}) : super(key: key);
+
+  final GastoFijoDataSource dataSource = GastoFijodbDatasource();
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => GastosFijosBloc(dataSource),
+      child: const TransactionFormViewBody(),
+    );
+  }
+}
+
+class TransactionFormViewBody extends StatefulWidget {
+  const TransactionFormViewBody({Key? key}) : super(key: key);
 
   @override
   TransactionFormViewState createState() => TransactionFormViewState();
 }
 
-class TransactionFormViewState extends ConsumerState<TransactionFormView> {
+class TransactionFormViewState extends State<TransactionFormViewBody> {
   final _formKey = GlobalKey<FormState>();
   String nombre = '';
   double monto = 0.0;
@@ -24,114 +38,66 @@ class TransactionFormViewState extends ConsumerState<TransactionFormView> {
   GastoFijoModel? selectedGastoFijo;
   GrupoPagos? selectedGrupoPagos;
   PagoModel? selectedPago;
-
   @override
   void initState() {
     super.initState();
-    ref.read(gastosFijosStateProvider.notifier).loadGastos();
+    context.read<GastosFijosBloc>().add(LoadGastosFijos());
   }
 
   @override
   Widget build(BuildContext context) {
-    final gastosFijosState = ref.watch(gastosFijosStateProvider);
-
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              gastosFijosState.gastosFijosList.when(
-                data: (gastosFijos) {
-                  return DropdownButtonFormField<String>(
-                    value: selectedGastoFijoId,
-                    hint: const Text('Selecciona un gasto fijo'),
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        selectedGastoFijoId = newValue;
-                        selectedGastoFijo = gastosFijos.firstWhere(
-                            (gasto) => gasto.id == newValue,
-                            orElse: () => GastoFijoModel(
-                                id: '', titulo: '', montoTotal: 0.0));
-                        selectedGrupoPagosId = null;
-                        selectedPagoId = null;
-                        selectedGrupoPagos = null;
-                        selectedPago = null;
-                      });
-                    },
-                    items: gastosFijos
-                        .map<DropdownMenuItem<String>>((GastoFijoModel gasto) {
-                      return DropdownMenuItem<String>(
-                        value: gasto.id,
-                        child: Text(gasto.titulo),
+    return Scaffold(
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                BlocBuilder<GastosFijosBloc, GastosFijosState>(
+                  builder: (context, state) {
+                    if (state is GastosFijosLoading) {
+                      return const CircularProgressIndicator();
+                    } else if (state is GastosFijosContent) {
+                      return DropdownButtonFormField<String>(
+                        value: selectedGastoFijoId,
+                        hint: const Text('Selecciona un gasto fijo'),
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            selectedGastoFijoId = newValue;
+                            selectedGastoFijo = state.gastosFijos.firstWhere(
+                              (gasto) => gasto.id == newValue,
+                            );
+                            // Restablecer las selecciones de grupo de pagos y pagos si es necesario
+                            selectedGrupoPagosId = null;
+                            selectedPagoId = null;
+                          });
+                        },
+                        items: state.gastosFijos.map<DropdownMenuItem<String>>(
+                            (GastoFijoModel gasto) {
+                          return DropdownMenuItem<String>(
+                            value: gasto.id,
+                            child: Text(gasto.titulo),
+                          );
+                        }).toList(),
                       );
-                    }).toList(),
-                  );
-                },
-                loading: () => const CircularProgressIndicator(),
-                error: (e, stack) => Text('Error: $e'),
-              ),
-              if (selectedGastoFijo != null)
-                DropdownButtonFormField<String>(
-                  value: selectedGrupoPagosId,
-                  hint: const Text('Selecciona un grupo de pagos'),
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      selectedGrupoPagosId = newValue;
-                      selectedGrupoPagos = selectedGastoFijo?.grupoPagos
-                          .firstWhere((grupo) => grupo.name == newValue,
-                              orElse: () => GrupoPagos(name: ''));
-                      selectedPagoId = null;
-                      selectedPago = null;
-                    });
+                    } else if (state is GastosFijosError) {
+                      return Text('Error: ${state.message}');
+                    }
+                    return const Text('Estado no esperado.');
                   },
-                  items: selectedGastoFijo!.grupoPagos
-                      .map<DropdownMenuItem<String>>((GrupoPagos grupo) {
-                    return DropdownMenuItem<String>(
-                      value: grupo.name,
-                      child: Text(grupo.name),
-                    );
-                  }).toList(),
                 ),
-              if (selectedGrupoPagos != null)
-                DropdownButtonFormField<String>(
-                  value: selectedPagoId,
-                  hint: const Text('Selecciona un pago'),
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      selectedPagoId = newValue;
-                      selectedPago = selectedGrupoPagos?.pagos.firstWhere(
-                          (pago) => pago.numero == newValue,
-                          orElse: () => PagoModel(
-                              numero: '', monto: 0.0, fecha: DateTime.now()));
-                      if (selectedPago != null) {
-                        nombre =
-                            'Pago ${selectedPago!.numero} de ${selectedGastoFijo!.titulo} - ${selectedGrupoPagos!.name}';
-                        monto = selectedPago!.monto * -1;
-                        fecha = selectedPago!.fecha;
-                      }
-                      _formKey.currentState!.save();
-                    });
-                  },
-                  items: selectedGrupoPagos!.pagos
-                      .map<DropdownMenuItem<String>>((PagoModel pago) {
-                    return DropdownMenuItem<String>(
-                      value: pago.numero,
-                      child: Text(
-                          '${pago.numero} - ${DateFormat('dd/MM/yyyy').format(pago.fecha)}'),
-                    );
-                  }).toList(),
-                ),
-              if (selectedGastoFijo == null)
+                // A partir de aquí, puedes agregar los demás DropdownButtonFormField
+                // para grupo de pagos y pago específico basándote en selectedGastoFijo
+                // y manejar sus cambios de estado de manera similar usando setState.
+
                 TextFormField(
                   initialValue: nombre,
                   decoration: const InputDecoration(
                       labelText: 'Nombre de la Transacción'),
                   validator: (value) {
-                    if (selectedGastoFijo == null &&
-                        (value == null || value.isEmpty)) {
+                    if (value == null || value.isEmpty) {
                       return 'Por favor ingrese un nombre';
                     }
                     return null;
@@ -140,55 +106,27 @@ class TransactionFormViewState extends ConsumerState<TransactionFormView> {
                     nombre = value!;
                   },
                 ),
-              if (selectedGastoFijo == null)
-                TextButton(
-                  onPressed: () async {
-                    final DateTime? pickedDate = await showDatePicker(
-                      context: context,
-                      initialDate: fecha,
-                      firstDate: DateTime(2023),
-                      lastDate: DateTime(2100),
-                    );
-                    if (pickedDate != null && pickedDate != fecha) {
-                      setState(() {
-                        fecha = pickedDate;
-                      });
+                // Añadir más campos y lógica aquí según sea necesario
+
+                ElevatedButton(
+                  onPressed: () {
+                    if (_formKey.currentState!.validate()) {
+                      _formKey.currentState!.save();
+                      // Aquí puedes manejar la creación de la Transacción
+                      // con los datos recogidos del formulario
+                      Navigator.pop(
+                          context,
+                          Transaccion(
+                            nombre: nombre,
+                            fecha: fecha,
+                            monto: monto,
+                          ));
                     }
                   },
-                  child: Text(
-                    'Fecha: ${DateFormat('dd/MM/yyyy').format(fecha)}',
-                  ),
+                  child: const Text('Guardar Transacción'),
                 ),
-              if (selectedGastoFijo == null)
-                TextFormField(
-                  initialValue: monto.toString(),
-                  decoration: const InputDecoration(labelText: 'Monto'),
-                  keyboardType: TextInputType.number,
-                  validator: (value) {
-                    if (selectedPago == null &&
-                        (value == null || value.isEmpty)) {
-                      return 'Por favor ingrese un monto';
-                    }
-                    return null;
-                  },
-                  onSaved: (value) {
-                    monto = double.parse(value!);
-                  },
-                ),
-              ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    _formKey.currentState!.save();
-                    Navigator.of(context).pop(Transaccion(
-                      nombre: nombre,
-                      fecha: fecha,
-                      monto: monto,
-                    ));
-                  }
-                },
-                child: const Text('Agregar Transacción'),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

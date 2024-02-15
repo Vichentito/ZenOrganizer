@@ -1,35 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:zen_organizer/config/domain/datasources/finanzas/config_datasource.dart';
-import 'package:zen_organizer/config/infrastructure/datasources/finanzas/config_datasoruce.dart';
-import 'package:zen_organizer/config/infrastructure/models/finanzas/config_model.dart';
 import 'package:zen_organizer/presentation/blocs/finanzas_config_bloc/finanzas_config_bloc.dart';
 import 'package:zen_organizer/presentation/widgets/shared/finanzas_drawer_menu.dart';
 
-class ConfigView extends StatelessWidget {
-  const ConfigView({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    // Asegúrate de tener una instancia de tu fuente de datos.
-    final ConfigDataSource dataSource = ConfigdbDatasource();
-    final AguinaldoDataSource aguinaldoDataSource = AguinaldodbDatasource();
-
-    return BlocProvider(
-      create: (_) => FinanzasConfigBloc(dataSource, aguinaldoDataSource),
-      child: const ConfigViewBody(),
-    );
-  }
-}
-
-class ConfigViewBody extends StatefulWidget {
-  const ConfigViewBody({super.key});
+class ConfigView extends StatefulWidget {
+  const ConfigView({super.key});
 
   @override
   ConfigViewState createState() => ConfigViewState();
 }
 
-class ConfigViewState extends State<ConfigViewBody> {
+class ConfigViewState extends State<ConfigView> {
   final _salaryController = TextEditingController();
   final _aguinaldoController = TextEditingController();
   final _aguinaldoPagadoController = TextEditingController();

@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:zen_organizer/config/infrastructure/models/finanzas/plan_anual.dart';
 import 'package:zen_organizer/presentation/blocs/finanzas_config_bloc/finanzas_config_bloc.dart';
 import 'package:zen_organizer/presentation/blocs/plan_anual_bloc/plan_anual_bloc.dart';
-import 'package:zen_organizer/presentation/providers/finanzas/plan_anual_providers.dart';
 import 'package:zen_organizer/presentation/views/finanazas_views/transaccion_from_view.dart';
-import 'package:zen_organizer/presentation/widgets/shared/finanzas_drawer_menu.dart'; // Asegúrate de importar correctamente tu modelo Quincena
 
-class QuincenaDetailView extends ConsumerStatefulWidget {
+class QuincenaDetailView extends StatefulWidget {
   final String planAnualId;
   final DateTime quincenaInicio;
   final DateTime quincenaFin;
@@ -24,7 +21,7 @@ class QuincenaDetailView extends ConsumerStatefulWidget {
   QuincenaDetailViewState createState() => QuincenaDetailViewState();
 }
 
-class QuincenaDetailViewState extends ConsumerState<QuincenaDetailView> {
+class QuincenaDetailViewState extends State<QuincenaDetailView> {
   final NumberFormat formatter = NumberFormat('#,##0.00', 'es_ES');
   double sueldo = 0.0;
   int? editingTransactionIndex;
@@ -40,56 +37,49 @@ class QuincenaDetailViewState extends ConsumerState<QuincenaDetailView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Detalles de Quincena'),
-      ),
-      body: BlocBuilder<PlanAnualBloc, PlanAnualState>(
-        builder: (context, state) {
-          if (state is PlanAnualLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (state is PlanAnualLoaded) {
-            final PlanAnualModel specificPlan = state.planesAnuales
-                .firstWhere((plan) => plan.id == widget.planAnualId);
-            final Quincena specificQuincena = specificPlan.quincenas.firstWhere(
-                (quincena) =>
-                    quincena.fechaInicio == widget.quincenaInicio &&
-                    quincena.fechaFin == widget.quincenaFin);
-            return BlocBuilder<FinanzasConfigBloc, FinanzasConfigState>(
-              builder: (context, configState) {
-                double sueldo = 0.0;
-                if (configState is FinanzasConfigLoaded) {
-                  sueldo = configState.config
-                      .sueldo; // Asumiendo que el estado tiene una propiedad `sueldo`
-                }
-
-                // A partir de aquí, tu lógica existente para construir la UI con `specificPlan` y `specificQuincena`
-                return SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: _buildCustomTable(specificQuincena, sueldo),
-                  ),
-                );
-              },
-            );
-          }
-
-          // Manejo de estado de error
-          if (state is PlanAnualError) {
-            return Center(child: Text('Error: ${state.message}'));
-          }
-
-          // Estado predeterminado si no se reconoce el estado actual
-          return const Center(child: Text('Estado no reconocido'));
-        },
-      ),
-      drawer: const FinanzasDrawerMenu(),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _addNewTransaction(specificPlan, specificQuincena),
-        tooltip: 'Agregar Transacción',
-        child: const Icon(Icons.add),
-      ),
-    );
+        appBar: AppBar(
+          title: const Text('Detalles de Quincena'),
+        ),
+        body: BlocBuilder<PlanAnualBloc, PlanAnualState>(
+          builder: (context, state) {
+            if (state is PlanAnualLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (state is PlanAnualLoaded) {
+              final PlanAnualModel specificPlan = state.planesAnuales
+                  .firstWhere((plan) => plan.id == widget.planAnualId);
+              final Quincena specificQuincena = specificPlan.quincenas
+                  .firstWhere((quincena) =>
+                      quincena.fechaInicio == widget.quincenaInicio &&
+                      quincena.fechaFin == widget.quincenaFin);
+              return BlocBuilder<FinanzasConfigBloc, FinanzasConfigState>(
+                builder: (context, configState) {
+                  double sueldo = 0.0;
+                  if (configState is FinanzasConfigLoaded) {
+                    sueldo = configState.config
+                        .sueldo; // Asumiendo que el estado tiene una propiedad `sueldo`
+                  }
+                  return SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: _buildCustomTable(specificQuincena, sueldo),
+                    ),
+                  );
+                },
+              );
+            }
+            if (state is PlanAnualError) {
+              return Center(child: Text('Error: ${state.message}'));
+            }
+            return const Center(child: Text('Estado no reconocido'));
+          },
+        ),
+        //drawer: const FinanzasDrawerMenu(),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () => _addNewTransaction(context),
+          tooltip: 'Agregar Transacción',
+          child: const Icon(Icons.add),
+        ));
   }
 
   Widget _buildCustomTable(Quincena quincena, double sueldo) {
@@ -209,7 +199,7 @@ class QuincenaDetailViewState extends ConsumerState<QuincenaDetailView> {
     // Fila para el total
     rows.add(
       Padding(
-        padding: const EdgeInsets.symmetric(vertical: 10.0),
+        padding: const EdgeInsets.only(top: 10.0, bottom: 15.0),
         child: Row(
           children: [
             const Expanded(
@@ -235,82 +225,44 @@ class QuincenaDetailViewState extends ConsumerState<QuincenaDetailView> {
       ),
     );
 
+    // Añadir un espacio en blanco al final para evitar el botón flotante
+    rows.add(const SizedBox(height: 80.0));
+
     return Column(children: rows);
   }
 
-  void _addNewTransaction(PlanAnualModel plan, Quincena quincena) async {
+  void _addNewTransaction(BuildContext context) async {
     final Transaccion? newTransaccion = await showModalBottomSheet<Transaccion>(
       context: context,
       builder: (BuildContext context) {
-        return const TransactionFormView();
+        return TransactionFormView();
       },
     );
-
+    if (!mounted) return;
     if (newTransaccion != null) {
-      PlanAnualModel updatedPlan = plan.copyWith();
-      int quincenaIndex = updatedPlan.quincenas.indexOf(quincena);
-      if (quincenaIndex != -1) {
-        Quincena updatedQuincena =
-            updatedPlan.quincenas[quincenaIndex].copyWith(
-          transacciones: [
-            ...updatedPlan.quincenas[quincenaIndex].transacciones,
-            newTransaccion,
-          ],
-        );
-        updatedPlan.quincenas[quincenaIndex] = updatedQuincena;
-
-        try {
-          await ref
-              .read(planAnualStateProvider.notifier)
-              .updatePlanInFirestore(widget.planAnualId, updatedPlan, plan);
-          // Forzar la recarga de los planes después de la actualización
-          await ref.read(planAnualStateProvider.notifier).loadPlanes();
-        } catch (e) {
-          // Manejar errores, por ejemplo, mostrando un mensaje al usuario
-        }
-      }
+      context.read<PlanAnualBloc>().add(
+            AddTransaccion(
+              planAnualId: widget.planAnualId,
+              quincenaInicio: widget.quincenaInicio,
+              quincenaFin: widget.quincenaFin,
+              newTransaccion: newTransaccion,
+            ),
+          );
     }
   }
 
-  void _updateTransactionAmount(int index, double newAmount) async {
-    final planAnualState = ref.read(planAnualStateProvider);
-    planAnualState.planAnualList.whenData((plans) async {
-      final specificPlan = plans.firstWhere(
-        (plan) => plan.id == widget.planAnualId,
-        orElse: () => PlanAnualModel(id: '', ano: DateTime.now().year),
-      );
-
-      int quincenaIndex = specificPlan.quincenas.indexWhere(
-        (quincena) =>
-            quincena.fechaInicio == widget.quincenaInicio &&
-            quincena.fechaFin == widget.quincenaFin,
-      );
-
-      if (quincenaIndex != -1) {
-        Quincena updatedQuincena =
-            specificPlan.quincenas[quincenaIndex].copyWith(
-          transacciones:
-              List.from(specificPlan.quincenas[quincenaIndex].transacciones),
+  void _updateTransactionAmount(int index, double newAmount) {
+    context.read<PlanAnualBloc>().add(
+          UpdateTransaccionAmount(
+            planAnualId: widget.planAnualId,
+            quincenaInicio: widget.quincenaInicio,
+            quincenaFin: widget.quincenaFin,
+            transaccionIndex: index,
+            newAmount: newAmount,
+          ),
         );
-        updatedQuincena.transacciones[index] =
-            updatedQuincena.transacciones[index].copyWith(monto: newAmount);
-
-        PlanAnualModel updatedPlan = specificPlan.copyWith();
-        updatedPlan.quincenas[quincenaIndex] = updatedQuincena;
-
-        try {
-          // Actualizar el plan anual en Firestore
-          await ref.read(planAnualStateProvider.notifier).updatePlanInFirestore(
-              widget.planAnualId, updatedPlan, specificPlan);
-          // Forzar la recarga de los planes después de la actualización
-          await ref.read(planAnualStateProvider.notifier).loadPlanes();
-          setState(() {
-            editingTransactionIndex = null;
-          });
-        } catch (e) {
-          // Manejar errores, por ejemplo, mostrando un mensaje al usuario
-        }
-      }
+    setState(() {
+      editingTransactionIndex = null;
     });
   }
 }
