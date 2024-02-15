@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:zen_organizer/config/domain/datasources/finanzas/gasto_fijo_item_datasource.dart';
 import 'package:zen_organizer/config/infrastructure/datasources/finanzas/gasto_fijo_item_datasource.dart';
 import 'package:zen_organizer/config/infrastructure/models/finanzas/gasto_fijo_item.dart';
@@ -28,16 +29,15 @@ class TransactionFormViewBody extends StatefulWidget {
 
 class TransactionFormViewState extends State<TransactionFormViewBody> {
   final _formKey = GlobalKey<FormState>();
+
   String nombre = '';
   double monto = 0.0;
   DateTime fecha = DateTime.now();
   String? selectedGastoFijoId;
-  String? selectedGrupoPagosId;
-  String? selectedPagoId;
-
   GastoFijoModel? selectedGastoFijo;
   GrupoPagos? selectedGrupoPagos;
   PagoModel? selectedPago;
+
   @override
   void initState() {
     super.initState();
@@ -59,19 +59,19 @@ class TransactionFormViewState extends State<TransactionFormViewBody> {
                   builder: (context, state) {
                     if (state is GastosFijosLoading) {
                       return const CircularProgressIndicator();
-                    } else if (state is GastosFijosContent) {
+                    }
+                    if (state is GastosFijosContent) {
                       return DropdownButtonFormField<String>(
                         value: selectedGastoFijoId,
                         hint: const Text('Selecciona un gasto fijo'),
                         onChanged: (String? newValue) {
                           setState(() {
                             selectedGastoFijoId = newValue;
-                            selectedGastoFijo = state.gastosFijos.firstWhere(
-                              (gasto) => gasto.id == newValue,
-                            );
-                            // Restablecer las selecciones de grupo de pagos y pagos si es necesario
-                            selectedGrupoPagosId = null;
-                            selectedPagoId = null;
+                            selectedGastoFijo = state.gastosFijos
+                                .firstWhere((gasto) => gasto.id == newValue);
+                            // Restablece los valores para el grupo de pagos y pago si cambias el gasto fijo
+                            selectedGrupoPagos = null;
+                            selectedPago = null;
                           });
                         },
                         items: state.gastosFijos.map<DropdownMenuItem<String>>(
@@ -82,15 +82,15 @@ class TransactionFormViewState extends State<TransactionFormViewBody> {
                           );
                         }).toList(),
                       );
-                    } else if (state is GastosFijosError) {
+                    }
+                    if (state is GastosFijosError) {
                       return Text('Error: ${state.message}');
                     }
                     return const Text('Estado no esperado.');
                   },
                 ),
-                // A partir de aquí, puedes agregar los demás DropdownButtonFormField
-                // para grupo de pagos y pago específico basándote en selectedGastoFijo
-                // y manejar sus cambios de estado de manera similar usando setState.
+                // Agrega aquí los otros DropdownButtonFormField para grupo de pagos y pago específico
+                // y la lógica para actualizar los campos de nombre, monto y fecha basado en el pago seleccionado
 
                 TextFormField(
                   initialValue: nombre,
@@ -106,8 +106,41 @@ class TransactionFormViewState extends State<TransactionFormViewBody> {
                     nombre = value!;
                   },
                 ),
-                // Añadir más campos y lógica aquí según sea necesario
-
+                TextButton(
+                  onPressed: () async {
+                    final DateTime? pickedDate = await showDatePicker(
+                      context: context,
+                      initialDate: fecha,
+                      firstDate: DateTime(2000),
+                      lastDate: DateTime(2101),
+                    );
+                    if (pickedDate != null && pickedDate != fecha) {
+                      setState(() {
+                        fecha = pickedDate;
+                      });
+                    }
+                  },
+                  child: Text(
+                    'Fecha: ${DateFormat('dd/MM/yyyy').format(fecha)}',
+                  ),
+                ),
+                TextFormField(
+                  initialValue: monto.toString(),
+                  decoration: const InputDecoration(labelText: 'Monto'),
+                  keyboardType: TextInputType.number,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Por favor ingrese un monto';
+                    }
+                    if (double.tryParse(value) == null) {
+                      return 'Por favor ingrese un valor numérico';
+                    }
+                    return null;
+                  },
+                  onSaved: (value) {
+                    monto = double.parse(value!);
+                  },
+                ),
                 ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
