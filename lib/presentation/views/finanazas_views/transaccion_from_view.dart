@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:zen_organizer/config/domain/datasources/finanzas/gasto_fijo_item_datasource.dart';
+import 'package:zen_organizer/config/datasources/finanzas/gasto_fijo_item_datasource.dart';
 import 'package:zen_organizer/config/infrastructure/datasources/finanzas/gasto_fijo_item_datasource.dart';
 import 'package:zen_organizer/config/infrastructure/models/finanzas/gasto_fijo_item.dart';
 import 'package:zen_organizer/config/infrastructure/models/finanzas/plan_anual.dart';
@@ -145,8 +145,6 @@ class TransactionFormViewState extends State<TransactionFormViewBody> {
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
                       _formKey.currentState!.save();
-                      // Aquí puedes manejar la creación de la Transacción
-                      // con los datos recogidos del formulario
                       Navigator.pop(
                           context,
                           Transaccion(

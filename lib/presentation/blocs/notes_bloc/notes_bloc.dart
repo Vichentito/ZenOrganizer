@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:zen_organizer/config/domain/datasources/notes_datasource.dart';
+import 'package:zen_organizer/config/datasources/notes_datasource.dart';
 import 'package:zen_organizer/config/infrastructure/models/notes_model.dart';
 
 part 'notes_event.dart';

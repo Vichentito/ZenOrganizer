@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:zen_organizer/config/domain/datasources/finanzas/plan_anual_datasource.dart';
+import 'package:zen_organizer/config/datasources/finanzas/plan_anual_datasource.dart';
 import 'package:zen_organizer/config/infrastructure/models/finanzas/plan_anual.dart';
 
 class PlanAnualdbDatasource extends PlanAnualDataSource {

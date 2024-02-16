@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:zen_organizer/config/domain/datasources/todos_datasource.dart';
+import 'package:zen_organizer/config/datasources/todos_datasource.dart';
 import 'package:zen_organizer/config/infrastructure/models/todos_model.dart';
 
 part 'todo_event.dart';
@@ -71,9 +71,18 @@ class TodoBloc extends Bloc<TodoEvent, TodoState> {
       SortTodosByPriority event, Emitter<TodoState> emit) async {
     if (state is TodosLoaded) {
       final currentState = state as TodosLoaded;
-      final sortedTodos = List<ToDoItemModel>.from(currentState.todos)
-        ..sort((a, b) => a.priority.compareTo(b.priority));
-      emit(currentState.copyWith(todos: sortedTodos, isSortedByPriority: true));
+      final todos = currentState.todos.toList();
+
+      if (currentState.isSortedByPriority == 0) {
+        todos.sort((a, b) => a.priority.compareTo(b.priority));
+        emit(currentState.copyWith(todos: todos, isSortedByPriority: 1));
+      } else if (currentState.isSortedByPriority == 1) {
+        todos.sort((a, b) => b.priority.compareTo(a.priority));
+        emit(currentState.copyWith(todos: todos, isSortedByPriority: 2));
+      } else {
+        todos.sort((a, b) => a.dueDate.compareTo(b.dueDate));
+        emit(currentState.copyWith(todos: todos, isSortedByPriority: 0));
+      }
     }
   }
 }

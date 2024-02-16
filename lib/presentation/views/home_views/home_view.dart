@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:zen_organizer/config/domain/datasources/todos_datasource.dart';
+import 'package:zen_organizer/config/datasources/todos_datasource.dart';
 import 'package:zen_organizer/config/infrastructure/datasources/todos_datasource.dart';
 import 'package:zen_organizer/config/infrastructure/models/todos_model.dart';
 import 'package:zen_organizer/presentation/blocs/todo_bloc/todo_bloc.dart';
@@ -114,21 +114,28 @@ class HomeViewBodyState extends State<HomeViewBody> {
               itemCount: state.todos.length,
               itemBuilder: (context, index) {
                 final todo = state.todos[index];
-                return ToDoItemCard(
-                  todo: todo,
-                  onCompleted: (bool? newValue) {
-                    if (newValue != null) {
-                      // Actualiza el estado completado de la tarea.
-                      final updatedTodo = todo.copyWith(isCompleted: newValue);
-                      context.read<TodoBloc>().add(UpdateTodo(updatedTodo));
-                    }
-                  },
-                  onEdit: () {
-                    // Implementa la funcionalidad de edición aquí.
-                  },
-                  onDelete: () {
-                    context.read<TodoBloc>().add(DeleteTodo(todo.id));
-                  },
+                return Column(
+                  children: [
+                    ToDoItemCard(
+                      todo: todo,
+                      onCompleted: (bool? newValue) {
+                        if (newValue != null) {
+                          // Actualiza el estado completado de la tarea.
+                          final updatedTodo =
+                              todo.copyWith(isCompleted: newValue);
+                          context.read<TodoBloc>().add(UpdateTodo(updatedTodo));
+                        }
+                      },
+                      onEdit: () {
+                        // Implementa la funcionalidad de edición aquí.
+                      },
+                      onDelete: () {
+                        context.read<TodoBloc>().add(DeleteTodo(todo.id));
+                      },
+                    ),
+                    if (index == state.todos.length - 1)
+                      const SizedBox(height: 70), // Añade espacio al final
+                  ],
                 );
               },
             );

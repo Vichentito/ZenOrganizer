@@ -13,17 +13,17 @@ class CustomBottomNavigation extends StatelessWidget {
       case '/':
         return 0;
       case '/notes':
-        return 1;
-      case '/finanzas':
-        return 2;
-      case '/finanzas/gastosfijos':
-        return 2;
-      case '/finanzas/config':
-        return 2;
-      case '/finanzas/quincenaDetails':
-        return 2;
-      case '/plantas':
         return 3;
+      case '/finanzas':
+        return 4;
+      case '/finanzas/gastosfijos':
+        return 4;
+      case '/finanzas/config':
+        return 4;
+      case '/finanzas/quincenaDetails':
+        return 4;
+      case '/plantas':
+        return 5;
       default:
         return 0;
     }
@@ -35,12 +35,18 @@ class CustomBottomNavigation extends StatelessWidget {
         context.go('/');
         break;
       case 1:
-        context.go('/notes');
+        context.go('/rutines');
         break;
       case 2:
-        context.go('/finanzas');
+        context.go('/assistant');
         break;
       case 3:
+        context.go('/notes');
+        break;
+      case 4:
+        context.go('/finanzas');
+        break;
+      case 5:
         context.go('/plantas');
         break;
       default:
@@ -56,6 +62,8 @@ class CustomBottomNavigation extends StatelessWidget {
         items: const [
           BottomNavigationBarItem(
               icon: Icon(Icons.list_alt_rounded), label: 'ToDo'),
+          BottomNavigationBarItem(icon: Icon(Icons.book), label: 'Rutinas'),
+          BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Asistente'),
           BottomNavigationBarItem(
               icon: Icon(Icons.notes_rounded), label: 'Notas'),
           BottomNavigationBarItem(

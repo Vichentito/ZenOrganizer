@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:zen_organizer/config/domain/datasources/finanzas/gasto_fijo_item_datasource.dart';
+import 'package:zen_organizer/config/datasources/finanzas/gasto_fijo_item_datasource.dart';
 import 'package:zen_organizer/config/infrastructure/models/finanzas/gasto_fijo_item.dart';
 
 class GastoFijodbDatasource implements GastoFijoDataSource {

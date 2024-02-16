@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:zen_organizer/config/domain/datasources/finanzas/config_datasource.dart';
+import 'package:zen_organizer/config/datasources/finanzas/config_datasource.dart';
 import 'package:zen_organizer/config/infrastructure/models/finanzas/config_model.dart';
 
 class ConfigdbDatasource extends ConfigDataSource {

@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:zen_organizer/config/domain/datasources/notes_datasource.dart';
+import 'package:zen_organizer/config/datasources/notes_datasource.dart';
 import 'package:zen_organizer/config/infrastructure/models/notes_model.dart';
 
 class NotesdbDatasource extends NotesDataSource {

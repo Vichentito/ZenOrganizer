@@ -1,6 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:zen_organizer/config/domain/datasources/finanzas/config_datasource.dart';
+import 'package:zen_organizer/config/datasources/finanzas/config_datasource.dart';
 import 'package:zen_organizer/config/infrastructure/models/finanzas/config_model.dart';
 
 part 'finanzas_config_event.dart';

@@ -13,16 +13,16 @@ class TodosLoading extends TodoState {}
 
 class TodosLoaded extends TodoState {
   final List<ToDoItemModel> todos;
-  final bool isSortedByPriority;
+  final int isSortedByPriority;
 
   const TodosLoaded({
     this.todos = const [],
-    this.isSortedByPriority = false,
+    this.isSortedByPriority = 1,
   });
 
   TodosLoaded copyWith({
     List<ToDoItemModel>? todos,
-    bool? isSortedByPriority,
+    int? isSortedByPriority,
   }) =>
       TodosLoaded(
         todos: todos ?? this.todos,

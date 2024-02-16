@@ -1,7 +1,7 @@
-import 'package:zen_organizer/config/domain/datasources/finanzas/config_datasource.dart';
-import 'package:zen_organizer/config/domain/datasources/finanzas/gasto_fijo_item_datasource.dart';
-import 'package:zen_organizer/config/domain/datasources/finanzas/plan_anual_datasource.dart';
-import 'package:zen_organizer/config/domain/datasources/notes_datasource.dart';
+import 'package:zen_organizer/config/datasources/finanzas/config_datasource.dart';
+import 'package:zen_organizer/config/datasources/finanzas/gasto_fijo_item_datasource.dart';
+import 'package:zen_organizer/config/datasources/finanzas/plan_anual_datasource.dart';
+import 'package:zen_organizer/config/datasources/notes_datasource.dart';
 import 'package:zen_organizer/config/infrastructure/datasources/finanzas/config_datasoruce.dart';
 import 'package:zen_organizer/config/infrastructure/datasources/finanzas/gasto_fijo_item_datasource.dart';
 import 'package:zen_organizer/config/infrastructure/datasources/finanzas/plan_anual_datasource.dart';

@@ -1,6 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:zen_organizer/config/domain/datasources/finanzas/gasto_fijo_item_datasource.dart';
+import 'package:zen_organizer/config/datasources/finanzas/gasto_fijo_item_datasource.dart';
 import 'package:zen_organizer/config/infrastructure/models/finanzas/gasto_fijo_item.dart';
 
 part 'gastos_fijos_event.dart';

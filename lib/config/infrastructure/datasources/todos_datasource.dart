@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:zen_organizer/config/domain/datasources/todos_datasource.dart';
+import 'package:zen_organizer/config/datasources/todos_datasource.dart';
 import 'package:zen_organizer/config/infrastructure/models/todos_model.dart';
 
 class TodosdbDatasource extends TodosDataSource {
@@ -29,11 +29,13 @@ class TodosdbDatasource extends TodosDataSource {
   @override
   Future<List<ToDoItemModel>> getTodos() async {
     final querySnapshot = await _todosCollection.get();
-    return querySnapshot.docs.map((doc) {
+    List<ToDoItemModel> todos_list = querySnapshot.docs.map((doc) {
       final data = doc.data() as Map<String, dynamic>;
       data['id'] = doc.id;
       return ToDoItemModel.fromJson(data);
     }).toList();
+    todos_list.sort((a, b) => a.priority.compareTo(b.priority));
+    return todos_list;
   }
 
   @override
