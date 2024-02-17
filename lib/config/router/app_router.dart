@@ -83,7 +83,13 @@ GoRouter createAppRouter(
               },
             ),
           ],
-        )
+        ),
+        GoRoute(
+          path: '/routines',
+          builder: (context, state) {
+            return const RoutinesView();
+          },
+        ),
       ],
     )
   ]);
